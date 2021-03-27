@@ -20,7 +20,7 @@ load_dotenv(os.path.join(projectFolder, '.env'))
 app = Flask(__name__)
 
 # Check for environment variable
-if not os.getenv("DATABASE_LOCAL"):
+if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
 
 # Configure session to use filesystem
@@ -30,8 +30,16 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Set up database
-engine = create_engine(os.getenv("DATABASE_LOCAL"))
+engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
+
+
+@app.after_request
+def after_request(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.route("/", methods=["POST", "GET"])
@@ -48,9 +56,19 @@ def index():
 
 @app.route("/books/<string:book_isbn>")
 def book(book_isbn):
+    book = db.execute("SELECT isbn,title, author, year from book WHERE isbn = :isbn", {
+                      "isbn": book_isbn}).fetchone()
+
+    if book is None:
+        return jsonify({"error": "Invalid book isbn"}), 422
+
     response = requests.get(
-        "https://www.googleapis.com/books/v1/volumes?q=isbn:"+book_isbn).json()
-    return response
+        "https://www.googleapis.com/books/v1/volumes?q=isbn:"+book_isbn)
+    data = response.json()
+    book_Google = data["items"][0]["volumeInfo"]
+    img = book_Google["imageLinks"]["thumbnail"]
+
+    return render_template("book.html", reviews=book_Google["ratingsCount"], promedio=book_Google["averageRating"], img=img, book=book, description=book_Google["description"])
 
 
 @app.route("/api/books/<string:book_isbn>")
@@ -86,13 +104,14 @@ def register():
         if request.form.get("password") != request.form.get("confirmation"):
             return apology("passwords doesn´t match!", 400)
 
-        if db.execute("SELECT username FROM users WHERE username = :username",
-                      username=request.form.get("username")):
-            return apology("user is already taken!", 400)
+        user = db.execute("SELECT * FROM users WHERE username = :username",
+                          {"username": request.form.get("username")}).fetchone()
+        if user is None:
+            return "User is taken, please go back"
 
         novoid = db.execute("INSERT INTO users('username', 'hash') VALUES(:username, :password)",
-                            {"username"=request.form.get("username"),
-                             "password"=generate_password_hash(request.form.get("password"))})
+                            {"username": request.form.get("username"),
+                             "password": generate_password_hash(request.form.get("password"))})
         session["user_id"] = novoid
         flash("Registered")
         return redirect("/")

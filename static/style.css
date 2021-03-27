@@ -5,6 +5,12 @@ body {
   height: 100vh;
 }
 
+#main-navbar {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: #333333;
+}
+
 .search {
   position: relative;
   -webkit-box-shadow: 0 0 40px rgba(51, 51, 51, 0.1);
@@ -38,8 +44,7 @@ body {
   background: blue;
 }
 
-.post-search {
-  width: 100%;
-  margin-right: auto;
+.search .container {
+  margin-top: 50px;
 }
 /*# sourceMappingURL=style.css.map */

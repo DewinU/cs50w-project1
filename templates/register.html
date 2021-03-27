@@ -1,0 +1,37 @@
+{% extends "layout.html" %} {% block title %} Register {% endblock %} {% block
+body %}
+<form action="{{ url_for('register')}}" method="post">
+  <div class="form-group">
+    <input
+      autocomplete="off"
+      autofocus
+      class="form-control"
+      name="username"
+      placeholder="Username"
+      type="text"
+    />
+  </div>
+  <div class="form-group">
+    <input
+      class="form-control"
+      name="password"
+      placeholder="Password"
+      type="password"
+      pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{7,}"
+      title="Password needs at least a lowercase letter, a capital letter, a number, and a minimun of 7 characters"
+      required
+    />
+  </div>
+  <div class="form-group">
+    <input
+      class="form-control"
+      name="confirmation"
+      placeholder="Confirm password"
+      type="password"
+    />
+  </div>
+
+  <button class="btn btn-primary" type="submit">Register</button>
+</form>
+
+{% endblock %}
