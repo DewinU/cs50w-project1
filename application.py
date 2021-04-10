@@ -19,6 +19,15 @@ load_dotenv(os.path.join(projectFolder, '.env'))
 
 app = Flask(__name__)
 
+
+# @app.after_request
+# def after_request(response):
+#     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+#     response.headers["Expires"] = 0
+#     response.headers["Pragma"] = "no-cache"
+#     return response
+
+
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
@@ -34,15 +43,7 @@ engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
 
-@app.after_request
-def after_request(response):
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Expires"] = 0
-    response.headers["Pragma"] = "no-cache"
-    return response
-
-
-@app.route("/", methods=["POST", "GET"])
+@   app.route("/", methods=["POST", "GET"])
 def index():
     if request.method == "GET":
         return render_template("index.html")
@@ -51,13 +52,14 @@ def index():
         q = request.form.get("q") + "%"
         books = db.execute(
             "Select * from book WHERE isbn LIKE :q or title LIKE :q or author like :q", {"q": q}).fetchall()
-        return render_template("books.html", books=books, q=q)
+
+    return render_template("books.html", q=q, books=books)
 
 
-@app.route("/books/<string:book_isbn>")
+@   app.route("/books/<string:book_isbn>")
 def book(book_isbn):
     book = db.execute("SELECT isbn,title, author, year from book WHERE isbn = :isbn", {
-                      "isbn": book_isbn}).fetchone()
+        "isbn": book_isbn}).fetchone()
 
     if book is None:
         return jsonify({"error": "Invalid book isbn"}), 422
@@ -71,18 +73,17 @@ def book(book_isbn):
     return render_template("book.html", reviews=book_Google["ratingsCount"], promedio=book_Google["averageRating"], img=img, book=book, description=book_Google["description"])
 
 
-@app.route("/api/books/<string:book_isbn>")
+@   app.route("/api/books/<string:book_isbn>")
 def api(book_isbn):
     book = db.execute("SELECT title, author, year from book WHERE isbn = :isbn", {
-                      "isbn": book_isbn}).fetchone()
+        "isbn": book_isbn}).fetchone()
     if book is None:
-        return jsonify({"error": "Invalid book isbn"}), 422
+        return jsonify({"error": "Invalid book isbn"})
 
-    external = requests.get(
-        "https://www.googleapis.com/books/v1/volumes?q=isbn:"+book_isbn)
-    data = external.json()
+    data = requests.get(
+        "https://www.googleapis.com/books/v1/volumes?q=isbn:"+book_isbn).json()
     if data is None:
-        return jsonify({"error": "Invalid book isbn"}), 422
+        return jsonify({"error": "Invalid book isbn"})
     book_Google = data["items"][0]["volumeInfo"]
     return jsonify({
         "title": book["title"],
@@ -93,34 +94,31 @@ def api(book_isbn):
     })
 
 
-@app.route("/register", methods=["GET", "POST"])
+@   app.route("/register", methods=["GET", "POST"])
 def register():
-    """Register user"""
     session.clear()
     if request.method == "POST":
-        if not request.form.get("username") or not request.form.get("password") or not request.form.get("confirmation"):
-            return apology("must fill all the blanks!", 400)
-
         if request.form.get("password") != request.form.get("confirmation"):
             return apology("passwords doesn´t match!", 400)
 
         user = db.execute("SELECT * FROM users WHERE username = :username",
                           {"username": request.form.get("username")}).fetchone()
-        if user is None:
+        if user is not None:
             return "User is taken, please go back"
 
-        novoid = db.execute("INSERT INTO users('username', 'hash') VALUES(:username, :password)",
+        novoid = db.execute("INSERT INTO users(username, password) VALUES(:username, :password)",
                             {"username": request.form.get("username"),
                              "password": generate_password_hash(request.form.get("password"))})
-        session["user_id"] = novoid
-        flash("Registered")
-        return redirect("/")
+        #session["user_id"] = novoid
+        db.commit()
+
+        return hola
 
     else:
         return render_template("/register.html")
 
 
-@app.route("/logout")
+@   app.route("/logout")
 def logout():
     """Log user out"""
     # Forget any user_id
@@ -129,7 +127,7 @@ def logout():
     return redirect("/")
 
 
-@app.route("/login", methods=["GET", "POST"])
+@ app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
 

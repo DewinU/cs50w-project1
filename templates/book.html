@@ -3,37 +3,25 @@ body %}
 <section id="book">
   <div class="container">
     <div class="row">
-      <div class="col-sm">
+      <div class="col-sm" align="center">
         <div class="image">
           <img clas="image" src="{{ img }}" />
-          <p>ISBN: {{book.isbn}}</p>
+          <p class="p">ISBN: {{book.isbn}}</p>
+          Puntuation:
+          <select name="start" id="cars" disabled>
+            <option value="1">{{ promedio }}</option>
+          </select>
         </div>
       </div>
       <div class="col-sm">
         <div class="text-box">
           <h2>{{ book.title }}</h2>
-          <p>
-            {{ description }}
-          </p>
+          <p>{{ description }}</p>
           <p>Written by: {{ book.author }}</p>
           <p>Published on: {{book.year}}</p>
-          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
-
-<section id="reviews">
-    <div class="container">
-      <div class="row">
-        <div class="col-sm">
-            Puntuation:
-            <select name="start" id="cars" disabled>
-                <option value="1">{{ promedio }}</option>
-              </select>
-        </div>
-      </div>
-    </div>
-  </section>
 {% endblock %}
