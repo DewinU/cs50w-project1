@@ -5,8 +5,8 @@ body %}
     <div class="row">
       <div class="col-sm" align="center">
         <div class="image">
-          <img clas="image" src="{{ img }}" />
-          <p class="p">ISBN: {{book.isbn}}</p>
+          <img clas="image" src="{{ img }}" width="50%" />
+          <p>ISBN: {{book.isbn}}</p>
           Puntuation:
           <select name="start" id="cars" disabled>
             <option value="1">{{ promedio }}</option>
@@ -23,5 +23,33 @@ body %}
       </div>
     </div>
   </div>
+</section>
+
+<section class="replies">
+  <div class="container">Here are some replies.</div>
+  {% if session.user_id %}
+  <div class="container">
+    If you want to leave a comment please
+    <a href="{{ url_for('login') }}">Login</a> or
+    <a href="{{ url_for('register') }}">Register</a>
+  </div>
+  {% else %}
+  <div class="container">
+    <div class="form-group">
+      <div class="comment-container">
+        <textarea
+          class="form-control"
+          id="exampleFormControlTextarea1"
+          rows="3"
+        ></textarea>
+      </div>
+      <div class="sub-container">
+        <button id="defaultBtn" class="btn btn-dark" type="submit">
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 </section>
 {% endblock %}

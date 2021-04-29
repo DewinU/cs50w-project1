@@ -1,29 +1,33 @@
 {% extends "layout.html" %} {% block title %} Log In {% endblock %} {% block
 body %}
-<form action="{{ url_for('register') }}" method="post">
-  <input
-    autocomplete="off"
-    autofocus
-    class="form-control"
-    name="username"
-    placeholder="Username"
-    type="text"
-    required
-    style="width: 50%"
-  />
+<div class="container">
+  <form action="{{ url_for('login') }}" method="post">
+    <div class="sub-container">
+      <input
+        autocomplete="off"
+        autofocus
+        class="form-control"
+        name="username"
+        placeholder="Username"
+        type="text"
+        required
+      />
+    </div>
 
-  <input
-    class="form-control"
-    name="password"
-    placeholder="Password"
-    type="password"
-    pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{7,}"
-    title="Password needs at least a lowercase letter, a capital letter, a number, and a minimun of 7 characters"
-    required
-    style="width: 50%"
-  />
+    <div class="sub-container">
+      <input
+        class="form-control"
+        name="password"
+        placeholder="Password"
+        type="password"
+        pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{7,}"
+        title="Password needs at least a lowercase letter, a capital letter, a number, and a minimun of 7 characters"
+        required
+      />
+    </div>
 
-  <button class="btn btn-dark" type="submit">Login</button>
-</form>
+    <button id="defaultBtn" class="btn btn-dark" type="submit">Login</button>
+  </form>
+</div>
 
 {% endblock %}

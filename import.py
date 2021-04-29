@@ -1,12 +1,8 @@
 import csv
 import os
 
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-
-projectFolder = os.path.expanduser('~/cs50w-project1')  # adjust as appropriate
-load_dotenv(os.path.join(projectFolder, '.env'))
 
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))

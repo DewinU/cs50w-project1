@@ -4,39 +4,49 @@ import tempfile
 import requests
 
 from tempfile import mkdtemp
-from werkzeug.exceptions import default_exceptions
 from werkzeug.security import check_password_hash, generate_password_hash
-from dotenv import load_dotenv
 from flask import Flask, session, render_template, request, redirect, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from helpers import apology, login_required
-
-projectFolder = os.path.expanduser('~/cs50w-project1')  # adjust as appropriate
-load_dotenv(os.path.join(projectFolder, '.env'))
 
 app = Flask(__name__)
 
 
-# @app.after_request
-# def after_request(response):
-#     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-#     response.headers["Expires"] = 0
-#     response.headers["Pragma"] = "no-cache"
-#     return response
+@app.after_request
+def after_request(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
 
+
+def login_required(f):
+    """
+    Decorate routes to require login.
+
+    http://flask.pocoo.org/docs/0.12/patterns/viewdecorators/
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_id") is None:
+            return redirect("/login")
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 # Configure session to use filesystem
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+
 
 # Set up database
 engine = create_engine(os.getenv("DATABASE_URL"))
@@ -99,20 +109,23 @@ def register():
     session.clear()
     if request.method == "POST":
         if request.form.get("password") != request.form.get("confirmation"):
-            return apology("passwords doesn´t match!", 400)
+            return "passwords doesn´t match!"
 
         user = db.execute("SELECT * FROM users WHERE username = :username",
                           {"username": request.form.get("username")}).fetchone()
         if user is not None:
             return "User is taken, please go back"
 
-        novoid = db.execute("INSERT INTO users(username, password) VALUES(:username, :password)",
-                            {"username": request.form.get("username"),
-                             "password": generate_password_hash(request.form.get("password"))})
-        #session["user_id"] = novoid
+        db.execute("INSERT INTO users(username, password) VALUES(:username, :password)",
+                   {"username": request.form.get("username"),
+                    "password": generate_password_hash(request.form.get("password"))})
         db.commit()
 
-        return hola
+        novoid = db.execute("Select * from users where username = :username",
+                            {"username": request.form.get("username")}).fetchone()
+
+        session["user_id"] = novoid["id_user"]
+        return redirect('/')
 
     else:
         return render_template("/register.html")
@@ -139,22 +152,25 @@ def login():
 
         # Ensure username was submitted
         if not request.form.get("username"):
-            return apology("must provide username", 403)
+            return "Must provide username"
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return apology("must provide password", 403)
+            return "Must provide password"
 
         # Query database for username
-        rows = db.execute("SELECT * FROM user WHERE username = :username", {
-            "username": request.form.get("username")})
+        user = db.execute("SELECT * FROM users WHERE username = :username", {
+            "username": request.form.get("username")}).fetchone()
 
         # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
+        if not user:
+            return "invalid username"
 
-        # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+        if not check_password_hash(user["password"], request.form.get("password")):
+            return "invalid password"
+
+            # Remember which user has logged in
+        session["user_id"] = user["id_user"]
 
         # Redirect user to home page
         return redirect("/")

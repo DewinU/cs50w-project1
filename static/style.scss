@@ -1,3 +1,10 @@
+* {
+  padding: 0;
+  margin: 0;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
 body {
   background-color: #eee;
   font-family: "Roboto", sans-serif;
@@ -37,4 +44,24 @@ body {
   height: 50px;
   width: 110px;
   background: rgb(51, 51, 51);
+}
+
+.container {
+  padding-top: 50px;
+  padding-left: 20px;
+  padding-right: 20px;
+  text-align: center;
+
+  .sub-container {
+    padding-bottom: 20px;
+    text-align: center;
+  }
+
+  .comment-container {
+    @extend .sub-container;
+  }
+
+  #Welcome-text {
+    color: white;
+  }
 }
