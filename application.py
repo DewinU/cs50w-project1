@@ -68,11 +68,20 @@ def index():
 
 @   app.route("/books/<string:book_isbn>")
 def book(book_isbn):
-    book = db.execute("SELECT isbn,title, author, year from book WHERE isbn = :isbn", {
+    book = db.execute("SELECT * from book WHERE isbn = :isbn", {
         "isbn": book_isbn}).fetchone()
 
     if book is None:
         return jsonify({"error": "Invalid book isbn"}), 422
+
+    reviews = db.execute(
+        "SELECT * from reviews where id_book = :id_book", {"id_book": book["id_book"]})
+
+    alreadyComented = False
+
+    for review in reviews:
+        if review["id_user"] == session["user_id"]:
+            alreadyComented = True
 
     response = requests.get(
         "https://www.googleapis.com/books/v1/volumes?q=isbn:"+book_isbn)
@@ -80,7 +89,7 @@ def book(book_isbn):
     book_Google = data["items"][0]["volumeInfo"]
     img = book_Google["imageLinks"]["thumbnail"]
 
-    return render_template("book.html", reviews=book_Google["ratingsCount"], promedio=book_Google["averageRating"], img=img, book=book, description=book_Google["description"])
+    return render_template("book.html", alreadyComented=alreadyComented, reviews=book_Google["ratingsCount"], promedio=book_Google["averageRating"], img=img, book=book, description=book_Google["description"])
 
 
 @   app.route("/api/books/<string:book_isbn>")

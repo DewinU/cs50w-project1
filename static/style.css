@@ -48,7 +48,7 @@ body {
   background: #333333;
 }
 
-.container {
+.container, .container .top-container {
   padding-top: 50px;
   padding-left: 20px;
   padding-right: 20px;
@@ -62,5 +62,9 @@ body {
 
 .container #Welcome-text {
   color: white;
+}
+
+.container .top-container {
+  padding-top: 150px;
 }
 /*# sourceMappingURL=style.css.map */

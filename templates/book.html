@@ -1,7 +1,7 @@
 {% extends "layout.html" %} {% block title %} Bookinator {% endblock %} {% block
 body %}
 <section id="book">
-  <div class="container">
+  <div class="container" style="padding-top: 150px">
     <div class="row">
       <div class="col-sm" align="center">
         <div class="image">
@@ -27,7 +27,7 @@ body %}
 
 <section class="replies">
   <div class="container">Here are some replies.</div>
-  {% if session.user_id %}
+  {% if not session.user_id %}
   <div class="container">
     If you want to leave a comment please
     <a href="{{ url_for('login') }}">Login</a> or

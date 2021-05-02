@@ -64,4 +64,9 @@ body {
   #Welcome-text {
     color: white;
   }
+
+  .top-container {
+    padding-top: 150px;
+    @extend .container;
+  }
 }
