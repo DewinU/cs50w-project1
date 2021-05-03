@@ -29,26 +29,31 @@ body %}
   <div class="container">Here are some replies.</div>
   {% if not session.user_id %}
   <div class="container">
-    If you want to leave a comment please
+    If you want to leave a comment about the book please
     <a href="{{ url_for('login') }}">Login</a> or
     <a href="{{ url_for('register') }}">Register</a>
   </div>
+  {% elif alreadyComented == true %}
+  <div class="container">You alredy make a comment about this book.</div>
   {% else %}
   <div class="container">
-    <div class="form-group">
-      <div class="comment-container">
-        <textarea
-          class="form-control"
-          id="exampleFormControlTextarea1"
-          rows="3"
-        ></textarea>
+    <form method="post">
+      <div class="form-group">
+        <div class="comment-container">
+          <textarea
+            class="form-control"
+            name="message"
+            rows="3"
+            required
+          ></textarea>
+        </div>
+        <div class="sub-container">
+          <button id="defaultBtn" class="btn btn-dark" type="submit">
+            Post
+          </button>
+        </div>
       </div>
-      <div class="sub-container">
-        <button id="defaultBtn" class="btn btn-dark" type="submit">
-          Submit
-        </button>
-      </div>
-    </div>
+    </form>
   </div>
   {% endif %}
 </section>

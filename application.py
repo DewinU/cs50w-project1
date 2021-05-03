@@ -5,7 +5,7 @@ import requests
 
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask import Flask, session, render_template, request, redirect, jsonify
+from flask import Flask, session, render_template, request, redirect, jsonify, url_for
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -66,7 +66,7 @@ def index():
     return render_template("books.html", q=q, books=books)
 
 
-@   app.route("/books/<string:book_isbn>")
+@   app.route("/books/<string:book_isbn>", methods=["POST", "GET"])
 def book(book_isbn):
     book = db.execute("SELECT * from book WHERE isbn = :isbn", {
         "isbn": book_isbn}).fetchone()
@@ -78,16 +78,22 @@ def book(book_isbn):
         "SELECT * from reviews where id_book = :id_book", {"id_book": book["id_book"]})
 
     alreadyComented = False
-
-    for review in reviews:
-        if review["id_user"] == session["user_id"]:
-            alreadyComented = True
-
     response = requests.get(
         "https://www.googleapis.com/books/v1/volumes?q=isbn:"+book_isbn)
     data = response.json()
     book_Google = data["items"][0]["volumeInfo"]
     img = book_Google["imageLinks"]["thumbnail"]
+
+    if book_Google is None:
+        return "Not Book"
+
+    for review in reviews:
+        if review["id_user"] == session["user_id"]:
+            alreadyComented = True
+    if request.method == "POST":
+        db.execute("Insert into reviews(rating,message,id_user,id_book) VALUES(:rating,:message,:id_user,:id_book)", {
+            'rating': book_Google["averageRating"], 'message': request.form.get("message"), 'id_user': session["user_id"], 'id_book': book['id_book']})
+        db.commit()
 
     return render_template("book.html", alreadyComented=alreadyComented, reviews=book_Google["ratingsCount"], promedio=book_Google["averageRating"], img=img, book=book, description=book_Google["description"])
 
