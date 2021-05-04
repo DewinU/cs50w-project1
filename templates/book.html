@@ -27,10 +27,20 @@ body %}
 
 <section class="replies">
   <div class="container">Here are some replies.</div>
-  {% if not session.user_id %}
+  {% for review in reviews %}
+  <div class="container">
+    <div class="comment-container">
+      <textarea class="commented" rows="3" disabled>
+{{ review.message }}</textarea
+      >
+    </div>
+  </div>
+  {% else %}
+  <div class="container">This book has no reviews</div>
+  {% endfor %} {% if not session.user_id %}
   <div class="container">
     If you want to leave a comment about the book please
-    <a href="{{ url_for('login') }}">Login</a> or
+    <a href="{{ url_for('login') }}">Login</a>
     <a href="{{ url_for('register') }}">Register</a>
   </div>
   {% elif alreadyComented == true %}

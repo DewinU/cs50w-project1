@@ -75,7 +75,7 @@ def book(book_isbn):
         return jsonify({"error": "Invalid book isbn"}), 422
 
     reviews = db.execute(
-        "SELECT * from reviews where id_book = :id_book", {"id_book": book["id_book"]})
+        "SELECT * from reviews where id_book = :id_book", {"id_book": book["id_book"]}).fetchall()
 
     alreadyComented = False
     response = requests.get(
@@ -87,15 +87,17 @@ def book(book_isbn):
     if book_Google is None:
         return "Not Book"
 
-    for review in reviews:
-        if review["id_user"] == session["user_id"]:
-            alreadyComented = True
+    if session.get("user_id") is not None:
+        for review in reviews:
+            if review["id_user"] == session["user_id"]:
+                alreadyComented = True
+
     if request.method == "POST":
         db.execute("Insert into reviews(rating,message,id_user,id_book) VALUES(:rating,:message,:id_user,:id_book)", {
             'rating': book_Google["averageRating"], 'message': request.form.get("message"), 'id_user': session["user_id"], 'id_book': book['id_book']})
         db.commit()
 
-    return render_template("book.html", alreadyComented=alreadyComented, reviews=book_Google["ratingsCount"], promedio=book_Google["averageRating"], img=img, book=book, description=book_Google["description"])
+    return render_template("book.html", alreadyComented=alreadyComented, reviews=reviews, promedio=book_Google["averageRating"], img=img, book=book, description=book_Google["description"])
 
 
 @   app.route("/api/books/<string:book_isbn>")

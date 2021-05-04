@@ -70,3 +70,14 @@ body {
     @extend .container;
   }
 }
+
+.commented {
+  width: 900px;
+  text-align: center;
+}
+
+@media only screen and (max-width: 633px) {
+  .commented {
+    width: 450px;
+  }
+}
